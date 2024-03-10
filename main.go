@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -12,7 +10,6 @@ import (
 
 	"github.com/compose-spec/compose-go/types"
 	dockerTypes "github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/registry"
 	"github.com/moby/moby/client"
 	"github.com/moby/moby/pkg/archive"
 	"gopkg.in/yaml.v2"
@@ -22,8 +19,8 @@ var (
 	composeContext,
 	composeFile,
 	tags,
-	username,
-	password,
+	//	username,
+	//	password,
 	DockerRegistry string
 
 	dockerClient *client.Client
@@ -49,8 +46,8 @@ func init() {
 	composeFile = os.Getenv("COMPOSE_FILE")
 	tags = os.Getenv("COMPOSE_TAGS")
 	DockerRegistry = os.Getenv("COMPOSE_REGISTRY")
-	username = os.Getenv("COMPOSE_USERNAME")
-	password = os.Getenv("COMPOSE_PASSWORD")
+	//	username = os.Getenv("COMPOSE_USERNAME")
+	//	password = os.Getenv("COMPOSE_PASSWORD")
 
 	dockerClient, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -115,17 +112,9 @@ func pushImage(dockerClient *client.Client, service types.ServiceConfig) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
-	authConfig, _ := json.Marshal(registry.AuthConfig{
-		Username: username,
-		Password: password,
-	})
-	authConfigEncoded := base64.URLEncoding.EncodeToString(authConfig)
-
 	tag := DockerRegistry + "/" + service.Image + ":" + tags
 	tag = strings.ToLower(tag)
-	pushOpts := dockerTypes.ImagePushOptions{
-		RegistryAuth: authConfigEncoded,
-	}
+	pushOpts := dockerTypes.ImagePushOptions{}
 	resp, err := dockerClient.ImagePush(ctx, tag, pushOpts)
 	if err != nil {
 		log.Fatal(err)
