@@ -19,8 +19,11 @@ import (
 )
 
 var (
+	composeContext,
 	composeFile,
 	tags,
+	username,
+	password,
 	DockerRegistry string
 
 	dockerClient *client.Client
@@ -33,9 +36,12 @@ type ComposeSpec struct {
 
 func init() {
 	var err error
+	composeContext = os.Getenv("COMPOSE_CONTEXT")
 	composeFile = os.Getenv("COMPOSE_FILE")
 	tags = os.Getenv("COMPOSE_TAGS")
 	DockerRegistry = os.Getenv("COMPOSE_REGISTRY")
+	username = os.Getenv("COMPOSE_USERNAME")
+	password = os.Getenv("COMPOSE_PASSWORD")
 
 	dockerClient, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -44,22 +50,16 @@ func init() {
 }
 
 func main() {
-	compose, err := os.ReadFile(composeFile)
+	compose, err := os.ReadFile(composeContext + composeFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("Compose file: ", string(compose))
-
 	err = yaml.Unmarshal(compose, &spec)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Print("Compose Spec: ", spec)
-
 	for _, service := range spec.Services {
-		log.Print("test")
 		if service.Build.Dockerfile == "" {
-			log.Println("No Dockerfile found for service: ")
 			continue
 		}
 
@@ -98,8 +98,8 @@ func pushImage(dockerClient *client.Client, service types.ServiceConfig) {
 	defer cancel()
 
 	authConfig, _ := json.Marshal(registry.AuthConfig{
-		Username: os.Getenv("DOCKER_USERNAME"),
-		Password: os.Getenv("DOCKER_PASSWORD"),
+		Username: username,
+		Password: password,
 	})
 	authConfigEncoded := base64.URLEncoding.EncodeToString(authConfig)
 

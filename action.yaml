@@ -7,7 +7,7 @@ inputs:
     description: "The build context for the Docker images"
     required: true
     default: "."
-  composefile:
+  compose-file:
     description: "The Dockerfile to use for building the images"
     required: true
     default: "Dockerfile"
@@ -15,7 +15,7 @@ inputs:
     description: "Whether to push the images to the registry"
     required: true
     default: "true"
-  tags:
+  tag:
     description: "The tags to apply to the images"
     required: true
     default: "latest"
@@ -23,6 +23,12 @@ inputs:
     description: "The registry to push the images to"
     required: true
     default: "docker.pkg.github.com"
+  username:
+    description: "The username to use for the registry"
+    required: false
+  password:
+    description: "The password to use for the registry"
+    required: false
   
 
 outputs:
@@ -34,8 +40,10 @@ runs:
   image: 'Dockerfile'
   env:
     COMPOSE_CONTEXT: ${{ inputs.context }}
-    COMPOSE_FILE: ${{ inputs.composefile }}
+    COMPOSE_FILE: ${{ inputs.compose-file }}
     COMPOSE_PUSH: ${{ inputs.push }}
-    COMPOSE_TAGS: ${{ inputs.tags }}
+    COMPOSE_TAGS: ${{ inputs.tag }}
     COMPOSE_REGISTRY: ${{ inputs.registry }}
+    COMPOSE_USERNAME: ${{ inputs.username }}
+    COMPOSE_PASSWORD: ${{ inputs.password }}
     
