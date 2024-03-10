@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -112,12 +113,25 @@ func buildImage(dockerClient *client.Client, service types.ServiceConfig) {
 func pushImage(dockerClient *client.Client, service types.ServiceConfig) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
-	authConfig := registry.AuthConfig{
-		Username:      username,
-		Password:      password,
-		ServerAddress: DockerRegistry,
+	var authEncoded string
+
+	if isECRRepositoryURL(DockerRegistry) {
+		// AWS ECR
+		// https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html
+		//
+		authConfig := registry.AuthConfig{
+			Username: "AWS",
+			Password: password,
+		}
+		authEncoded, _ = registry.EncodeAuthConfig(authConfig)
+	} else {
+		// Docker Hub
+		authConfig := registry.AuthConfig{
+			Username: username,
+			Password: password,
+		}
+		authEncoded, _ = registry.EncodeAuthConfig(authConfig)
 	}
-	authEncoded, _ := registry.EncodeAuthConfig(authConfig)
 
 	tag := DockerRegistry + "/" + service.Image + ":" + tags
 	tag = strings.ToLower(tag)
@@ -133,4 +147,13 @@ func pushImage(dockerClient *client.Client, service types.ServiceConfig) {
 	if err != nil {
 		log.Fatal("Error closing push reader: ", err)
 	}
+}
+
+func isECRRepositoryURL(url string) bool {
+	if url == "public.ecr.aws" {
+		return true
+	}
+	// Regexp is based on the ecr urls shown in https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html
+	var ecrRexp = regexp.MustCompile(`^.*?dkr\.ecr\..*?\.amazonaws\.com$`)
+	return ecrRexp.MatchString(url)
 }
