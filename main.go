@@ -92,12 +92,12 @@ func buildImage(dockerClient *client.Client, service types.ServiceConfig) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tags := strings.ToLower(service.Image)
+	tag := strings.ToLower(DockerRegistry + "/" + service.Image + ":" + tags)
 
 	buildOpts := dockerTypes.ImageBuildOptions{
 		Dockerfile: service.Build.Dockerfile,
 		Context:    buildContext,
-		Tags:       []string{tags},
+		Tags:       []string{tag},
 		Remove:     true,
 	}
 	resp, err := dockerClient.ImageBuild(ctx, buildContext, buildOpts)
