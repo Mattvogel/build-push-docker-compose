@@ -31,7 +31,16 @@ var (
 )
 
 type ComposeSpec struct {
-	Services map[string]types.ServiceConfig `yaml:"services"`
+	Services map[string]Service `yaml:"services"`
+}
+
+type Service struct {
+	Id    string `yaml:"-"`
+	Image string `yaml:"image"`
+	Build struct {
+		Context    string `yaml:"context"`
+		Dockerfile string `yaml:"dockerfile"`
+	} `yaml:"build"`
 }
 
 func init() {
@@ -62,10 +71,17 @@ func main() {
 		if service.Build.Dockerfile == "" {
 			continue
 		}
+		st := types.ServiceConfig{
+			Image: service.Image,
+			Build: &types.BuildConfig{
+				Context:    service.Build.Context,
+				Dockerfile: service.Build.Dockerfile,
+			},
+		}
 
 		log.Println("Building: ", service.Image)
-		buildImage(dockerClient, service)
-		pushImage(dockerClient, service)
+		buildImage(dockerClient, st)
+		pushImage(dockerClient, st)
 	}
 }
 
