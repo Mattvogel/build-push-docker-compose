@@ -95,7 +95,6 @@ func buildImage(dockerClient *client.Client, service types.ServiceConfig) {
 	tags := strings.ToLower(service.Image)
 
 	buildOpts := dockerTypes.ImageBuildOptions{
-		con
 		Tags:   []string{tags},
 		Remove: true,
 	}
