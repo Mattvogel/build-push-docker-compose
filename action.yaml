@@ -1,0 +1,41 @@
+name: "Build and Push Docker Compose images."
+description: "Build and Push Docker images to a registry using a docker compose specification"
+author: mattvogel
+
+inputs:
+  context:
+    description: "The build context for the Docker images"
+    required: true
+    default: "."
+  composefile:
+    description: "The Dockerfile to use for building the images"
+    required: true
+    default: "Dockerfile"
+  push:
+    description: "Whether to push the images to the registry"
+    required: true
+    default: "true"
+  tags:
+    description: "The tags to apply to the images"
+    required: true
+    default: "latest"
+  registry:
+    description: "The registry to push the images to"
+    required: true
+    default: "docker.pkg.github.com"
+  
+
+outputs:
+  imageids:
+    description: "The image ids of the images that were built"
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    COMPOSE_CONTEXT: ${{ inputs.context }}
+    COMPOSE_FILE: ${{ inputs.composefile }}
+    COMPOSE_PUSH: ${{ inputs.push }}
+    COMPOSE_TAGS: ${{ inputs.tags }}
+    COMPOSE_REGISTRY: ${{ inputs.registry }}
+    
