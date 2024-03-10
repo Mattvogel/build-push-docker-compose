@@ -74,7 +74,7 @@ func main() {
 		st := types.ServiceConfig{
 			Image: service.Image,
 			Build: &types.BuildConfig{
-				Context:    service.Build.Context,
+				Context:    composeContext + service.Build.Context,
 				Dockerfile: service.Build.Dockerfile,
 			},
 		}
@@ -95,6 +95,7 @@ func buildImage(dockerClient *client.Client, service types.ServiceConfig) {
 	tags := strings.ToLower(service.Image)
 
 	buildOpts := dockerTypes.ImageBuildOptions{
+		con
 		Tags:   []string{tags},
 		Remove: true,
 	}
