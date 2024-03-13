@@ -34,7 +34,6 @@ type ComposeSpec struct {
 }
 
 type Service struct {
-	Id    string `yaml:"-"`
 	Image string `yaml:"image"`
 	Build struct {
 		Context    string `yaml:"context"`
@@ -64,50 +63,53 @@ func main() {
 	}
 	err = yaml.Unmarshal(compose, &spec)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unmarshalling Error: ", err)
 	}
-	for _, service := range spec.Services {
+	for key, service := range spec.Services {
 		if service.Build.Dockerfile == "" {
 			continue
 		}
+		log.Println("Service ID: ", key)
+		log.Println("Service Image Name: ", service.Image)
 		st := types.ServiceConfig{
-			Image: service.Image,
+			Image: key,
 			Build: &types.BuildConfig{
-				Context:    composeContext + service.Build.Context,
+				Context:    service.Build.Context,
 				Dockerfile: service.Build.Dockerfile,
 			},
 		}
 
-		log.Println("Building: ", service.Image)
+		log.Println("Building: ", key)
 		buildImage(dockerClient, st)
 		pushImage(dockerClient, st)
 	}
 }
 
-func buildImage(dockerClient *client.Client, service types.ServiceConfig) {
+func buildImage(dockerClient *client.Client, service types.ServiceConfig) string {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	buildContext, err := archive.TarWithOptions(service.Build.Context, &archive.TarOptions{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Build Context :", err)
 	}
-	tag := strings.ToLower(DockerRegistry + "/" + service.Image + ":" + tags)
+	imageName := strings.ToLower(DockerRegistry + "/" + service.Image + ":" + tags)
 
 	buildOpts := dockerTypes.ImageBuildOptions{
 		Dockerfile: service.Build.Dockerfile,
 		Context:    buildContext,
-		Tags:       []string{tag},
+		Tags:       []string{imageName},
 		Remove:     true,
 	}
 	resp, err := dockerClient.ImageBuild(ctx, buildContext, buildOpts)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Image Build: ", err)
 	}
 	defer resp.Body.Close()
 	_, err = io.Copy(os.Stdout, resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("IO Close Error: ", err)
 	}
+	return imageName
 }
 
 func pushImage(dockerClient *client.Client, service types.ServiceConfig) {

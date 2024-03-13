@@ -2,8 +2,7 @@ version: '3'
 name: "test"
 
 services:
-  testImage:
-    image: "testImage"
+  companiesapi:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: "."
+      dockerfile: "Dockerfile"
