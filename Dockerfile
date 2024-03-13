@@ -6,7 +6,7 @@ COPY . .
 RUN go get -d -v
 RUN go build -o /go/bin/build-push-docker-compose .
 
-FROM scratch
+FROM docker:dind-rootless
 COPY --from=builder /go/bin/build-push-docker-compose /opt/build-push-docker-compose
 WORKDIR /github/workspace
 ENTRYPOINT ["/opt/build-push-docker-compose"]
