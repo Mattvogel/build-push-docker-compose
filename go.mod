@@ -4,6 +4,7 @@ go 1.21.7
 
 require (
 	github.com/compose-spec/compose-go v1.20.2
+	github.com/docker/docker v25.0.5+incompatible
 	github.com/moby/moby v25.0.4+incompatible
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -38,7 +39,6 @@ require (
 
 require (
 	github.com/distribution/reference v0.5.0 // indirect
-	github.com/docker/docker v25.0.4+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/mattn/go-shellwords v1.0.12 // indirect
