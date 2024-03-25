@@ -2,10 +2,6 @@ name: "Build and Push Docker Compose images."
 description: "Build and Push Docker images to a registry using a docker compose specification"
 author: mattvogel
 
-branding:
-  icon: 'heart'
-  color: 'green'
-
 inputs:
   context:
     description: "The build context for the Docker images"
@@ -40,5 +36,14 @@ outputs:
     description: "The image ids of the images that were built"
 
 runs:
-  using: node20
-  main: dist/index.js
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    COMPOSE_CONTEXT: ${{ inputs.context }}
+    COMPOSE_FILE: ${{ inputs.compose-file }}
+    COMPOSE_PUSH: ${{ inputs.push }}
+    COMPOSE_TAGS: ${{ inputs.tag }}
+    COMPOSE_REGISTRY: ${{ inputs.registry }}
+    COMPOSE_USERNAME: ${{ inputs.username }}
+    COMPOSE_PASSWORD: ${{ inputs.password }}
+    

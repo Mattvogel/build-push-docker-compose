@@ -1,12 +1,9 @@
-FROM golang:alpine as builder
+FROM ubuntu:latest
 
-RUN apk update && apk add --no-cache git
-WORKDIR /go/src/build-push-docker-compose
-COPY . .
-RUN go get -d -v
-RUN go build -o /go/bin/build-push-docker-compose .
+RUN apt update
+RUN apt install -y nginx
 
-FROM docker:dind-rootless
-COPY --from=builder /go/bin/build-push-docker-compose /opt/build-push-docker-compose
-WORKDIR /github/workspace
-ENTRYPOINT ["/opt/build-push-docker-compose"]
+EXPOSE 80
+EXPOSE 443
+
+CMD ["nginx", "-g", "daemon off;"]
